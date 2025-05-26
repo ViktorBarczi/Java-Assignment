@@ -9,6 +9,11 @@ import jakarta.persistence.ManyToOne;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Data;
 
+/**
+ * Entity representing a copy of a book in the library system.
+ * This class contains details about the book copy, including its availability status.
+ * It is used to persist information about individual copies of books in the database.
+ */
 @Entity
 @Data
 public class BookCopy {

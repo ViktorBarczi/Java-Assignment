@@ -10,6 +10,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import lombok.Data;
 
+/**
+ * Entity representing a book in the library system.
+ * This class contains details about the book such as title, author, ISBN,
+ * published year, and a list of copies available in the library.
+ * It is used to persist book information in the database.
+ */
 @Entity
 @Data
 public class Book {

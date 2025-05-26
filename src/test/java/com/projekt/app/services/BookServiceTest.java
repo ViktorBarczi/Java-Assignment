@@ -7,6 +7,8 @@ import static org.mockito.Mockito.*;
 import java.util.Optional;
 import com.projekt.app.dtos.BookRequest;
 import com.projekt.app.entities.Book;
+import com.projekt.app.exceptions.BadRequestException;
+import com.projekt.app.exceptions.NotFoundException;
 import com.projekt.app.repositories.IBookCopyRepository;
 import com.projekt.app.repositories.IBookRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,7 +71,7 @@ public class BookServiceTest {
 
     when(bookRepository.findByTitle("Existing Title")).thenReturn(Optional.of(new Book()));
 
-    Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+    Exception exception = assertThrows(BadRequestException.class, () -> {
       bookService.saveBook(request);
     });
 
@@ -80,7 +82,7 @@ public class BookServiceTest {
   void testGetBookById_NotFound_ThrowsException() {
     when(bookRepository.findById(1L)).thenReturn(Optional.empty());
 
-    Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+    Exception exception = assertThrows(NotFoundException.class, () -> {
       bookService.getBookById(1L);
     });
 

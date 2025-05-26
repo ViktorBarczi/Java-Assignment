@@ -8,6 +8,12 @@ import com.projekt.app.dtos.BookUpdate;
 import com.projekt.app.entities.Book;
 import com.projekt.app.entities.BookCopy;
 
+/**
+ * Interface for Book Service.
+ * Provides methods for managing books and their copies.
+ * Includes methods to retrieve, save, update, and delete books,
+ * as well as manage book copies.
+ */
 public interface IBookService {
 
   public List<BookResponse> getAllBooks();
@@ -17,8 +23,6 @@ public interface IBookService {
   public Book saveBook(BookRequest BookRequest) throws IllegalArgumentException;
 
   public void deleteBook(Long id);
-
-  public void deleteBookByTitle(String title);
 
   public Book updateBook(Long id, BookUpdate bookUpdate);
 

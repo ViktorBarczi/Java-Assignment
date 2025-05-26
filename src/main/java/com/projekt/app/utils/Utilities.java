@@ -1,5 +1,9 @@
 package com.projekt.app.utils;
 
+/**
+ * Utility class for common operations.
+ * This class provides methods that can be used across the application for various utility functions.
+ */
 public class Utilities {
   public static boolean isValidIsbn13(String isbn) {
     // Remove hyphens if any

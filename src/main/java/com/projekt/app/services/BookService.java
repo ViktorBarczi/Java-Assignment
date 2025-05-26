@@ -9,20 +9,30 @@ import com.projekt.app.dtos.BookResponse;
 import com.projekt.app.dtos.BookUpdate;
 import com.projekt.app.entities.Book;
 import com.projekt.app.entities.BookCopy;
+import com.projekt.app.exceptions.BadRequestException;
+import com.projekt.app.exceptions.NotFoundException;
 import com.projekt.app.repositories.IBookCopyRepository;
 import com.projekt.app.repositories.IBookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * Service class for managing book-related operations.
+ * Provides methods to retrieve, save, update, and delete books and their copies.
+ * Implements the IBookService interface.
+ */
 @Service
 public class BookService implements IBookService {
 
   @Autowired
   private IBookRepository bookRepository;
+
   @Autowired
   private IBookCopyRepository bookCopyRepository;
 
-  //Get all books from the database
+  /**
+   * Retrieve all books from the database and map them to BookResponse DTOs.
+   */
   public List<BookResponse> getAllBooks() {
     List<Book> list = bookRepository.findAll();
     if (list.isEmpty()) {
@@ -39,28 +49,23 @@ public class BookService implements IBookService {
     }).toList();
   }
 
-  //Get book by id from the database
+  /**
+   * Find a book by its ID or throw NotFoundException if not found.
+   */
   public Book getBookById(Long id) {
     Book book = bookRepository.findById(id).orElse(null);
     if (book == null) {
-      throw new IllegalArgumentException("Book with id '" + id + "' does not exist.");
+      throw new NotFoundException("Book with id '" + id + "' does not exist.");
     }
     return book;
   }
 
-  //Save a book to the database
-  public Book saveBook(BookRequest BookRequest) throws IllegalArgumentException {
-    if (BookRequest.getTitle() == null || BookRequest.getTitle().isEmpty()) {
-      throw new IllegalArgumentException("Book title cannot be null or empty.");
-    }
-    if (BookRequest.getAuthor() == null || BookRequest.getAuthor().isEmpty()) {
-      throw new IllegalArgumentException("Book author cannot be null or empty.");
-    }
-    if (BookRequest.getIsbn() == null || BookRequest.getIsbn().isEmpty()) {
-      throw new IllegalArgumentException("Book ISBN cannot be null or empty.");
-    }
+  /**
+   * Save a new book to the database after validating it doesn't already exist by title.
+   */
+  public Book saveBook(BookRequest BookRequest) throws BadRequestException {
     if (!bookRepository.findByTitle(BookRequest.getTitle()).isEmpty()) {
-      throw new IllegalArgumentException(
+      throw new BadRequestException(
           "Book with title '" + BookRequest.getTitle() + "' already exists.");
     }
     Book book = new Book();
@@ -71,7 +76,9 @@ public class BookService implements IBookService {
     return bookRepository.save(book);
   }
 
-
+  /**
+   * Delete a book and all its associated copies from the database.
+   */
   public void deleteBook(Long id) {
     Optional<Book> book = bookRepository.findById(id);
     if (book != null) {
@@ -80,22 +87,13 @@ public class BookService implements IBookService {
       }
       bookRepository.delete(book.get());
     } else {
-      throw new IllegalArgumentException("Book with id '" + id + "' does not exist.");
+      throw new NotFoundException("Book with id '" + id + "' does not exist.");
     }
   }
 
-  public void deleteBookByTitle(String title) {
-    Optional<Book> book = bookRepository.findByTitle(title);
-    if (book != null) {
-      for (BookCopy bookcopy : book.get().getCopies()) {
-        bookCopyRepository.delete(bookcopy);
-      }
-      bookRepository.delete(book.get());
-    } else {
-      throw new IllegalArgumentException("Book with title '" + title + "' does not exist.");
-    }
-  }
-
+  /**
+   * Update an existing book's title and/or published year.
+   */
   public Book updateBook(Long id, BookUpdate bookUpdate) {
     Book existingBook = bookRepository.findById(id).orElse(null);
     if (existingBook != null) {
@@ -103,15 +101,18 @@ public class BookService implements IBookService {
       existingBook.setPublishedYear(bookUpdate.getPublishedYear());
       return bookRepository.save(existingBook);
     } else {
-      throw new IllegalArgumentException("Book with id '" + id + "' does not exist.");
+      throw new NotFoundException("Book with id '" + id + "' does not exist.");
     }
   }
 
+  /**
+   * Add a new copy to the specified book.
+   */
   public BookCopy postBookCopy(Long bookId) {
     BookCopy bookCopy = new BookCopy();
     Book book = bookRepository.findById(bookId).orElse(null);
     if (book == null) {
-      throw new IllegalArgumentException("Book with id '" + bookId + "' does not exist.");
+      throw new NotFoundException("Book with id '" + bookId + "' does not exist.");
     }
     bookCopy.setBookId(book);
     book.getCopies().add(bookCopy);
@@ -119,30 +120,38 @@ public class BookService implements IBookService {
     return bookCopyRepository.save(bookCopy);
   }
 
+  /**
+   * Get all copies of a specific book.
+   */
   public List<BookCopy> getBookCopies(Long bookId) {
     Book book = bookRepository.findById(bookId).orElse(null);
     if (book == null) {
-      throw new IllegalArgumentException("Book with id '" + bookId + "' does not exist.");
+      throw new NotFoundException("Book with id '" + bookId + "' does not exist.");
     }
     return book.getCopies();
   }
 
+  /**
+   * Update the availability status of a specific book copy.
+   */
   public BookCopy updateBookCopy(Long bookId, Long BookCopyId,
       BookCopyAvaliability bookCopyAvaliability) {
+
     Book book = bookRepository.findById(bookId).orElse(null);
     if (book == null) {
-      throw new IllegalArgumentException("Book with id '" + bookId + "' does not exist.");
+      throw new NotFoundException("Book with id '" + bookId + "' does not exist.");
     }
+
     List<BookCopy> bookCopies = book.getCopies();
     for (BookCopy bookCopy : bookCopies) {
       if (bookCopy.getId().equals(BookCopyId)) {
         bookCopy.setAvailable(bookCopyAvaliability.isAvailable());
-        bookRepository.save(book);
-        return bookCopyRepository.save(bookCopy);
+        bookRepository.save(book); // Save changes in parent
+        return bookCopyRepository.save(bookCopy); // Save updated copy
       }
     }
-    throw new IllegalArgumentException("Book copy with id '" + BookCopyId + "' does not exist.");
 
+    throw new NotFoundException("Book copy with id '" + BookCopyId + "' does not exist.");
   }
 
 }
