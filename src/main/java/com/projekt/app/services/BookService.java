@@ -1,6 +1,5 @@
 package com.projekt.app.services;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +22,7 @@ public class BookService implements IBookService {
   @Autowired
   private IBookCopyRepository bookCopyRepository;
 
+  //Get all books from the database
   public List<BookResponse> getAllBooks() {
     List<Book> list = bookRepository.findAll();
     if (list.isEmpty()) {
@@ -39,6 +39,7 @@ public class BookService implements IBookService {
     }).toList();
   }
 
+  //Get book by id from the database
   public Book getBookById(Long id) {
     Book book = bookRepository.findById(id).orElse(null);
     if (book == null) {
@@ -47,10 +48,7 @@ public class BookService implements IBookService {
     return book;
   }
 
-  public Book getBookByTitle(String title) {
-    return bookRepository.findByTitle(title).get();
-  }
-
+  //Save a book to the database
   public Book saveBook(BookRequest BookRequest) throws IllegalArgumentException {
     if (BookRequest.getTitle() == null || BookRequest.getTitle().isEmpty()) {
       throw new IllegalArgumentException("Book title cannot be null or empty.");
@@ -60,14 +58,6 @@ public class BookService implements IBookService {
     }
     if (BookRequest.getIsbn() == null || BookRequest.getIsbn().isEmpty()) {
       throw new IllegalArgumentException("Book ISBN cannot be null or empty.");
-    }
-    if (BookRequest.getPublishedYear() == null || BookRequest.getPublishedYear() <= 0) {
-      throw new IllegalArgumentException(
-          "Book publication year must be a positive integer: " + BookRequest.getPublishedYear());
-    }
-    if (BookRequest.getPublishedYear() > LocalDate.now().getYear()) {
-      throw new IllegalArgumentException(
-          "Book publication year cannot be in the future: " + BookRequest.getPublishedYear());
     }
     if (!bookRepository.findByTitle(BookRequest.getTitle()).isEmpty()) {
       throw new IllegalArgumentException(
@@ -80,6 +70,7 @@ public class BookService implements IBookService {
     book.setPublishedYear(BookRequest.getPublishedYear());
     return bookRepository.save(book);
   }
+
 
   public void deleteBook(Long id) {
     Optional<Book> book = bookRepository.findById(id);

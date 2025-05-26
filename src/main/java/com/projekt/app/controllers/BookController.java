@@ -1,5 +1,6 @@
 package com.projekt.app.controllers;
 
+import java.time.LocalDate;
 import java.util.List;
 import com.projekt.app.dtos.BookCopyAvaliability;
 import com.projekt.app.dtos.BookRequest;
@@ -8,6 +9,8 @@ import com.projekt.app.dtos.BookUpdate;
 import com.projekt.app.entities.Book;
 import com.projekt.app.entities.BookCopy;
 import com.projekt.app.services.BookService;
+import com.projekt.app.utils.Utilities;
+import com.projekt.exceptions.InvalidBookDataException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -39,6 +42,15 @@ public class BookController {
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public void postBook(@RequestBody BookRequest bookRequest) {
+    if (bookRequest.getPublishedYear() > LocalDate.now().getYear()) {
+      throw new InvalidBookDataException("Published year cannot be in the future.");
+    }
+    if (bookRequest.getPublishedYear() <= 0) {
+      throw new InvalidBookDataException("Published year must be a positive number.");
+    }
+    if (!Utilities.isValidIsbn13(bookRequest.getIsbn())) {
+      throw new InvalidBookDataException("Invalid ISBN number.");
+    }
     this.bookService.saveBook(bookRequest);
   }
 

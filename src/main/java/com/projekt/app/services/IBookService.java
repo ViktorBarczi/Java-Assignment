@@ -14,8 +14,6 @@ public interface IBookService {
 
   public Book getBookById(Long id);
 
-  public Book getBookByTitle(String title);
-
   public Book saveBook(BookRequest BookRequest) throws IllegalArgumentException;
 
   public void deleteBook(Long id);
